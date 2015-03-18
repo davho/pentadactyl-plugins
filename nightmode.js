@@ -1,7 +1,7 @@
 /*
  * Night Mode plugin for pentadactyl
  *
- * Copyright (c) 2014 David Hoffmann
+ * Copyright (c) 2015 David Hoffmann
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -191,7 +191,7 @@ function shouldApplyNightStyle () {
 
 
 /**
- * Apply the stylesheet on the current tab.
+ * Apply the stylesheet to the current tab.
  */
 function applyNightStyle () {
     group.styles.sheets.map (function (sheet) sheet.enabled = true);
@@ -199,7 +199,7 @@ function applyNightStyle () {
 
 
 /**
- * Unapply the stylesheet on the current tab.
+ * Unapply the stylesheet from the current tab.
  */
 function unApplyNightStyle () {
     group.styles.sheets.map (function (sheet) sheet.enabled = false);
