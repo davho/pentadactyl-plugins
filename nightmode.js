@@ -19,7 +19,9 @@
  */
 
 
-"use strict";
+/*
+ * NOTE: Documentation is at the tail of this file.
+ */
 
 
 /*
@@ -27,7 +29,12 @@
  * (https://code.google.com/p/dactyl/issues/detail?id=1013) created by eri!
  * <hans.orter@gmx.de> and vetinari <vetinari.userstyles@inode.at>
  */
-//{{{ nightStyle
+
+
+"use strict";
+
+
+// the CSS that gets applied to the websites {{{
 let nightStyle = 'body, html {' +
     '    min-height: 100%!important;' +
     '}' +
@@ -150,6 +157,8 @@ let nightStyle = 'body, html {' +
 
 // a switch denoting whether Night Mode is currently enabled
 gBrowser.nightMode = false;
+
+
 // add the stylesheet (but don't enable it yet, see the last parameter)
 group.styles.add ("nightStyle", "*", nightStyle, undefined, true);
 
@@ -165,7 +174,7 @@ function toggleNightMode () {
 /**
  * Enable/disable Night Mode for the current tab.
  */
-function togglePageNightMode () {
+function toggleTabNightMode () {
     gBrowser.mCurrentTab.nightMode = !gBrowser.mCurrentTab.nightMode;
 }
 
@@ -210,26 +219,64 @@ function applyOrNot () {
 }
 
 
-group.mappings.add ([modes.NORMAL], ["gn"],
+group.commands.add (["nightmodetoggle", "nimo"],
         "Toggle Night Mode",
         function () {
             toggleNightMode ();
             applyOrNot ();
-        });
+        },
+        { argCount: "0" }, false);
 
 
-group.mappings.add ([modes.NORMAL], ["gN"],
+group.commands.add (["nightmodetoggletab", "nimot"],
         "Toggle Night Mode for the current tab (only enabling it if Night Mode is globally enabled)",
         function () {
-            togglePageNightMode ();
+            toggleTabNightMode ();
             applyOrNot ();
-        });
+        },
+        { argCount: "0" }, false);
 
 
 group.autocmd.add (["LocationChange"], "*",
         function () {
             applyOrNot ();
         });
+
+
+// documentation {{{
+var INFO =
+["plugin", { name: "nightmode",
+             version: "1.0",
+             href: "https://github.com/davho/pentadactyl-plugins/blob/master/nightmode.js",
+             summary: "Night Mode",
+             xmlns: "dactyl" },
+    ["author", {}, "David Hoffmann"],
+    ["license", { href: "http://www.gnu.org/licenses/gpl-2.0.en.html" }, "GPL 2.0"],
+    ["project", { name: "Pentadactyl", "min-version": "1.0" }],
+    ["p", {},
+        "Adds keybindings to globally (or tab-wise) enable and disable a CSS ",
+        "that darkens all websites in order to reduce eye strain during late ",
+        "browsing sessions."],
+
+    ["item", {},
+        ["tags", {}, ":nightmodetoggle :nimo"],
+        ["strut"],
+        ["spec", {}, ":nightmodetoggle"],
+        ["description", {},
+            ["p", {},
+                "Toggle Night Mode.  When it is enabled, a dark CSS gets applied ",
+                "to all websites.  Using the :nightmodetoggletab command, tabs ",
+                "can excluded from this rule."]]],
+
+    ["item", {},
+        ["tags", {}, ":nightmodetoggletab :nimot"],
+        ["strut"],
+        ["spec", {}, ":nightmodetoggletab"],
+        ["description", {},
+            ["p", {},
+                "Toggle Night Mode for the current tab.  When Night Mode is ",
+                "enabled, do not apply the dark CSS to the current tab."]]],
+];//}}}
 
 
 // vim: ft=javascript fdm=marker sw=4 ts=4 et:
