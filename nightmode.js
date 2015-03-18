@@ -15,8 +15,11 @@
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA."
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+
+
+"use strict";
 
 
 /*
@@ -24,8 +27,7 @@
  * (https://code.google.com/p/dactyl/issues/detail?id=1013) created by eri!
  * <hans.orter@gmx.de> and vetinari <vetinari.userstyles@inode.at>
  */
-
-
+//{{{ nightStyle
 let nightStyle = 'body, html {' +
     '    min-height: 100%!important;' +
     '}' +
@@ -143,51 +145,62 @@ let nightStyle = 'body, html {' +
     '    background-image: url(data:image/gif;base64,R0lGODlhBAAEAIAAABERESIiIiH5BAAAAAAALAAAAAAEAAQAAAIGTACXaHkFADs=) !important;' +
     '    color: #bcc8dc !important;' +
     '}';
+//}}}
 
 
-function initializeNightMode () {
-    gBrowser.nightStyle = false;
-}
+// a switch denoting whether Night Mode is currently enabled
+gBrowser.nightMode = false;
+// add the stylesheet (but don't enable it yet, see the last parameter)
+group.styles.add ("nightStyle", "*", nightStyle, undefined, true);
 
 
+/**
+ * Enable/disable Night Mode globally.
+ */
 function toggleNightMode () {
-    if (gBrowser.nightStyle) {
-        gBrowser.nightStyle = false;
-    } else {
-        gBrowser.nightStyle = true;
-    }
+    gBrowser.nightMode = !gBrowser.nightMode;
 }
 
 
+/**
+ * Enable/disable Night Mode for the current tab.
+ */
 function togglePageNightMode () {
-    if (gBrowser.mCurrentTab.nightStyle) {
-        gBrowser.mCurrentTab.nightStyle = false;
-    } else {
-        gBrowser.mCurrentTab.nightStyle = true;
-    }
+    gBrowser.mCurrentTab.nightMode = !gBrowser.mCurrentTab.nightMode;
 }
 
 
+/**
+ * Check whether the stylesheet should get applied to the current tab.
+ */
 function shouldApplyNightStyle () {
-    if (typeof (gBrowser.mCurrentTab.nightStyle) == 'undefined') {
-        gBrowser.mCurrentTab.nightStyle = true;
+    if (typeof (gBrowser.mCurrentTab.nightMode) == 'undefined') {
+        gBrowser.mCurrentTab.nightMode = true;
     }
-    return gBrowser.nightStyle && gBrowser.mCurrentTab.nightStyle;
+    return gBrowser.nightMode && gBrowser.mCurrentTab.nightMode;
 }
 
 
+/**
+ * Apply the stylesheet on the current tab.
+ */
 function applyNightStyle () {
-    ex.style (
-        gBrowser.mCurrentBrowser.contentDocument.location.href,
-        plugins.nightmode.nightStyle);
+    group.styles.sheets.map (function (sheet) sheet.enabled = true);
 }
 
 
+/**
+ * Unapply the stylesheet on the current tab.
+ */
 function unApplyNightStyle () {
-    ex.delstyle (gBrowser.mCurrentBrowser.contentDocument.location.href);
+    group.styles.sheets.map (function (sheet) sheet.enabled = false);
 }
 
 
+/**
+ * If Night Mode is enabled on the current tab, apply the style sheet.
+ * Otherwise, unapply it.
+ */
 function applyOrNot () {
     if (shouldApplyNightStyle ()) {
         applyNightStyle ();
@@ -197,24 +210,26 @@ function applyOrNot () {
 }
 
 
-initializeNightMode ();
-
 group.mappings.add ([modes.NORMAL], ["gn"],
         "Toggle Night Mode",
         function () {
-            plugins.nightmode.toggleNightMode ();
-            plugins.nightmode.applyOrNot ();
+            toggleNightMode ();
+            applyOrNot ();
         });
+
 
 group.mappings.add ([modes.NORMAL], ["gN"],
         "Toggle Night Mode for the current tab (only enabling it if Night Mode is globally enabled)",
         function () {
-            plugins.nightmode.togglePageNightMode ();
-            plugins.nightmode.applyOrNot ();
+            togglePageNightMode ();
+            applyOrNot ();
         });
 
+
 group.autocmd.add (["LocationChange"], "*",
-        function () { plugins.nightmode.applyOrNot (); });
+        function () {
+            applyOrNot ();
+        });
 
 
 // vim: ft=javascript fdm=marker sw=4 ts=4 et:
