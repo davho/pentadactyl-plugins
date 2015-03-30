@@ -148,7 +148,7 @@ group.commands.add (["tabg[roup]", "tg"],
 // TODO: understand
 function tabgroupCompleter (context, excludeActiveGroup) {
 
-    const GI = getInitializedTabView ().GroupItems;
+    let GI = getInitializedTabView ().GroupItems;
     let groupItems = GI.groupItems;
     if (excludeActiveGroup) {
         let activeGroup = GI.getActiveGroupItem ();
@@ -169,14 +169,16 @@ function tabgroupCompleter (context, excludeActiveGroup) {
 
 
 // TODO: removed tabGroup object around these functions
+// TODO: use more dactyl.assert?
 
 
 
+// {{{ getInitializedTabView ()
 /**
  * Get the window.TabView object.  If it isn't properly initialized yet, start
  * initialization, wait until it is finished and return the object afterwards.
  *
- * @return {TabView}
+ * @return {TabView} The properly initialized window.TabView
  */
 function getInitializedTabView () {
     let tv = window.TabView;
@@ -193,10 +195,14 @@ function getInitializedTabView () {
 
     return tv._window;
 }
+// }}}
 
 
+// {{{ getPinnedTabs ()
 /**
- * Get an array containing all app tabs.
+ * Get an array containing all pinned tabs.
+ *
+ * @return {Array} An array of all pinned tabs
  */
 function getPinnedTabs () {
     let pinnedTabs = [];
@@ -210,9 +216,11 @@ function getPinnedTabs () {
 
     return pinnedTabs;
 }
+// }}}
 
 
 // TODO: decipher parameter count
+// {{{ findGroup (name, count)
 /**
  * Get a GroupItem object (a Tab Group) by its name or id.
  *
@@ -260,10 +268,13 @@ function findGroup (name, count) {
 
     return null;
 }
+// }}}
 
 
+// TODO: unification; uses either an index, a relative index or a string (and findGroup)
 // TODO: disable relative indices (who needs that when switching
 // tabgroups...)?
+// {{{ switchTo (spec, wrap)
 /**
  * Switch to a group or an orphaned tab.
  *
@@ -276,9 +287,10 @@ function switchTo (spec, wrap) {
     let GI = getInitializedTabView ().GroupItems;
     let current = GI.getActiveGroupItem () || GI.getActiveOrphanTab ();
     let groups = GI.groupItems;
-    // TODO: most probable explanation: sometimes, possible index numbers are
-    // omitted; therefore, when switching relatively, one has to probe which
-    // index actually exists.  offset determines whether to go up or down.
+    // TODO: most probable explanation of this variable: sometimes, possible
+    // index numbers are omitted; therefore, when switching relatively, one has
+    // to probe which index actually exists.  offset determines whether to go
+    // upwards or downwards.
     let offset = 1;
     let relative = false;
 
@@ -342,10 +354,9 @@ function switchTo (spec, wrap) {
                 getInitializedTabView ().UI.goToTab (tabs.getTab (0));
             }
         }
-        // TODO: no idea why this is case necessary (could it be an
-        // inconistency in the browser?)
+        // if the index doesn't exist (but a relative index was given
+        // initially), start searching for it
         else if (relative) {
-            dactyl.echoerr ("The strange case has occurred: " + spec);
             groupSwitch (index + offset, true);
         } else {
           dactyl.echoerr ("Cannot switch to tab group: " + spec);
@@ -354,8 +365,10 @@ function switchTo (spec, wrap) {
     }
     groupSwitch (index, wrap);
 }
+// }}}
 
 
+// {{{ createGroup (name, shouldSwitch, tab)
 /**
  * Create a new Tab Group.
  *
@@ -366,13 +379,6 @@ function switchTo (spec, wrap) {
  * @return {GroupItem} The new GroupItem (a Tab Group)
  */
 function createGroup (name, shouldSwitch, tab) {
-    // TODO: is this stuff really necessary? most probable answer: nope.
-    // let pageBounds = getInitializedTabView ().Items.getPageBounds ();
-    // pageBounds.inset (20, 20);
-    // let box = new getInitializedTabView ().Rect (pageBounds);
-    // box.width = 125;
-    // box.height = 110;
-    // let group = new getInitializedTabView ().GroupItem ([], { bounds: box, title: name });
     let group = new getInitializedTabView ().GroupItem ([], { bounds: undefined, title: name });
 
     if (tab && !tab.pinned)
@@ -401,18 +407,18 @@ function createGroup (name, shouldSwitch, tab) {
     }
     return group;
 }
+// }}}
 
 
-// TODO: make things more "strongly typed" (meaning create different methods
-// for the case of group being a group object and group being a string)
-// TODO: use more dactyl.assert?
+// TODO: unifcation; uses a GroupItem or string and findGroup
+// {{{ moveTab (tab, group, shouldSwitch)
 /**
  * Move a tab to a Tab Group.
  *
  * @param {element} tab The tab to move
- * @param {GroupItem||string} group The group to move the tab to (either
- * a string that can be used to determine the group using findGroup
- * or a GroupItem)
+ * @param {GroupItem||string} group The Tab Group to move the tab to (either
+ * a GroupItem or a string that can be used to determine the corresponding
+ * GroupItem using findGroup)
  * @param {boolean} shouldSwitch Whether to switch to the tab after moving
  * it
  */
@@ -428,11 +434,14 @@ function moveTab (tab, group, shouldSwitch) {
             getInitializedTabView ().UI.goToTab (tab);
     }
 }
+// }}}
 
 
-// TODO: s/const/let/
+// TODO: unifcation; always uses a string and findGroup
+// {{{ remove (groupName)
 /**
- * Close all tabs in the given (or current) Tab Group.
+ * Close all tabs in the given (or current) Tab Group (and thus, remove the Tab
+ * Group altogether).
  *
  * @param {string} groupName The Tab Group to close all tabs in (if
  * undefined, the current Tab Group's tabs are being closed)
@@ -473,6 +482,7 @@ function remove (groupName) {
     }
     group.closeAll ();
 }
+// }}}
 
 
 // {{{ documentation
