@@ -170,6 +170,7 @@ function tabgroupCompleter (context, excludeActiveGroup) {
 
 // TODO: removed tabGroup object around these functions
 // TODO: use more dactyl.assert?
+// TODO: clean many lets
 
 
 
@@ -190,7 +191,7 @@ function getInitializedTabView () {
         let waiting = true;
         tv._initFrame (function () { waiting = false; });
         while (waiting)
-            dactyl.threadYield (false, true);
+            util.threadYield (false, true);
     }
 
     return tv._window;
@@ -320,7 +321,7 @@ function switchTo (spec, wrap) {
         return;
 
     let length = groups.length;
-    let pinned = getPinnedTabs;
+    let pinned = getPinnedTabs ();
 
     function groupSwitch (index, wrap) {
         // if the index is out of range, wrap (but only if wrap is true)
@@ -379,14 +380,14 @@ function switchTo (spec, wrap) {
  * @return {GroupItem} The new GroupItem (a Tab Group)
  */
 function createGroup (name, shouldSwitch, tab) {
-    let group = new getInitializedTabView ().GroupItem ([], { bounds: undefined, title: name });
+
+    let group = new (getInitializedTabView ()).GroupItem ([], { bounds: undefined, title: name });
 
     if (tab && !tab.pinned)
         window.TabView.moveTabTo (tab, group.id);
 
     if (shouldSwitch) {
-        // TODO: clean many lets
-        let pinnedTabs = getPinnedTabs;
+        let pinnedTabs = getPinnedTabs ();
         let child = group.getChild (0);
         // if there is a non-pinned tab in the Tab Group, select it
         if (child) {
@@ -405,6 +406,7 @@ function createGroup (name, shouldSwitch, tab) {
         }
 
     }
+
     return group;
 }
 // }}}
@@ -463,7 +465,7 @@ function remove (groupName) {
             // switch to the next Tab Group
             switchTo ("+1", true);
         else {
-            let pinnedTabs = getPinnedTabs;
+            let pinnedTabs = getPinnedTabs ();
             // if there are no pinned tabs, create a new blank tab
             if (pinnedTabs.length == 0)
                 gb.loadOnTab (window.BROWSER_NEW_TAB_URL || "about:blank", { inBackground: false, relatedToCurrent: false });
